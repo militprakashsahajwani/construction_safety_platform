@@ -1,0 +1,106 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  admin
+  site_manager
+  safety_officer
+}
+
+enum IncidentType {
+  accident
+  hazard
+  near_miss
+}
+
+enum ReportStatus {
+  open
+  pending
+  resolved
+}
+
+enum Severity {
+  low
+  medium
+  high
+  critical
+}
+
+model User {
+  id             String           @id @default(cuid())
+  name           String
+  email          String           @unique
+  passwordHash   String           @map("password_hash")
+  role           Role             @default(safety_officer)
+  assignedSiteId String?          @map("assigned_site_id")
+  assignedSite   Site?            @relation("AssignedUsers", fields: [assignedSiteId], references: [id])
+  managedSites   Site[]           @relation("SiteManager")
+  reports        IncidentReport[]
+  inspections    Inspection[]
+  notifications  Notification[]
+  createdAt      DateTime         @default(now()) @map("created_at")
+}
+
+model Site {
+  id          String           @id @default(cuid())
+  name        String
+  location    String
+  managerId   String?          @map("manager_id")
+  manager     User?            @relation("SiteManager", fields: [managerId], references: [id])
+  users       User[]           @relation("AssignedUsers")
+  reports     IncidentReport[]
+  inspections Inspection[]
+  createdAt   DateTime         @default(now()) @map("created_at")
+}
+
+model IncidentReport {
+  id          String       @id @default(cuid())
+  siteId      String       @map("site_id")
+  reporterId  String       @map("reporter_id")
+  type        IncidentType
+  category    String
+  description String
+  imageUrl    String?      @map("image_url")
+  status      ReportStatus @default(open)
+  severity    Severity     @default(medium)
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt
+  site        Site         @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  reporter    User         @relation(fields: [reporterId], references: [id], onDelete: Cascade)
+}
+
+model ChecklistTemplate {
+  id          String       @id @default(cuid())
+  name        String
+  items       Json
+  createdAt   DateTime     @default(now()) @map("created_at")
+  inspections Inspection[]
+}
+
+model Inspection {
+  id          String            @id @default(cuid())
+  siteId      String            @map("site_id")
+  inspectorId String            @map("inspector_id")
+  checklistId String            @map("checklist_id")
+  results     Json
+  date        DateTime          @default(now())
+  site        Site              @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  inspector   User              @relation(fields: [inspectorId], references: [id])
+  checklist   ChecklistTemplate @relation(fields: [checklistId], references: [id])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  message   String
+  type      String
+  readBool  Boolean  @default(false) @map("read_bool")
+  createdAt DateTime @default(now()) @map("created_at")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}

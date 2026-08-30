@@ -1,0 +1,1 @@
+export function errorHandler(e,q,s,n){console.error(e);if(e.name==='ZodError')return s.status(400).json({message:'Validation failed',errors:e.errors});s.status(e.status||500).json({message:e.message||'Server error'})}
