@@ -108,16 +108,16 @@ Run `npm run seed` against the target database first.
 | Notifications | `GET /api/notifications`, `PATCH /api/notifications/:id/read` |
 | Administration | `GET/POST /api/admin/users`, `PUT/DELETE /api/admin/users/:id` |
 
-## Deployment
+## Live deployment
 
-1. Create a free Neon PostgreSQL database and add its connection string as Render's `DATABASE_URL`.
-2. Deploy the `backend` folder to a free Render Web Service using [`render.yaml`](./render.yaml).
-3. Deploy the `frontend` folder through Vercel, with `VITE_API_URL` set to `https://YOUR-RENDER-SERVICE.onrender.com/api`.
-4. Add the final Vercel URL as `FRONTEND_URL` in Render.
-5. Run `npm run seed` once against the production Neon database to create the demo data and credentials.
+| Service | URL |
+| --- | --- |
+| Live application | [construction-safety-platform.vercel.app](https://construction-safety-platform.vercel.app/) |
+| REST API | [construction-safety-platform-qlf2.onrender.com](https://construction-safety-platform-qlf2.onrender.com/api/health) |
+| Source repository | [GitHub repository](https://github.com/militprakashsahajwani/construction_safety_platform) |
 
-## Notes
+### Production configuration
 
-- Free Render services may sleep after inactivity and need time to restart.
-- `.env` files are excluded from source control; only `.env.example` files are committed.
-- Cloudinary and SMTP credentials are optional for basic local testing. In-app notifications work without SMTP.
+The deployed frontend communicates with the Render API through `VITE_API_URL`. The Render service uses Neon PostgreSQL through `DATABASE_URL` and requires `JWT_SECRET` to issue secure login tokens. Demo data is created with `npm run seed`.
+
+> Free Render services can take up to a minute to respond after inactivity. This is a free-tier hosting behaviour, not an application error.
