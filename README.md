@@ -1,45 +1,81 @@
-# SafetyHub — Construction Site Safety Compliance Platform
+# SafetyHub
 
-SafetyHub is a full-stack web application that replaces paper-based construction safety reporting with digital incident reporting, inspections, compliance tracking, notifications and administrative oversight.
+### Construction Site Safety Compliance Reporting Platform
 
-## Features
+[![Source Code](https://img.shields.io/badge/GitHub-Source%20Code-181717?logo=github)](https://github.com/militprakashsahajwani/construction_safety_platform)
+[![Frontend](https://img.shields.io/badge/Frontend-React%20%2B%20Vite-61DAFB?logo=react)](./frontend)
+[![Backend](https://img.shields.io/badge/API-Node.js%20%2B%20Express-339933?logo=node.js)](./backend)
+[![Database](https://img.shields.io/badge/Database-PostgreSQL-4169E1?logo=postgresql)](./backend/prisma/schema.prisma)
 
-- JWT authentication with `admin`, `site_manager`, and `safety_officer` roles
-- Hazard, accident and near-miss reporting with severity, category, site and image attachment fields
-- Safety checklist creation and site inspection workflow
-- Compliance dashboard: reports, resolution rate, unresolved issues, inspection pass rate and incident trend chart
-- In-app notifications for critical reports, inspections and status changes
-- Admin user and construction-site management
-- Responsive React/Tailwind interface and protected routes
+SafetyHub digitises construction-site safety operations. It enables teams to report incidents, complete safety inspections, monitor compliance performance, receive alerts, and administer users and project sites through one responsive web application.
+
+> **Repository:** [militprakashsahajwani/construction_safety_platform](https://github.com/militprakashsahajwani/construction_safety_platform)
+
+## Key capabilities
+
+- Secure JWT authentication with bcrypt password hashing and role-based access control.
+- Role-aware workspaces for administrators, site managers, and safety officers.
+- Incident reporting for hazards, accidents, and near misses with severity, category, site, status, and optional image evidence.
+- Reusable safety checklists and inspection/audit results with pass/fail notes.
+- Compliance KPIs for report resolution, unresolved issues, inspection pass rate, and incident trends.
+- In-app notifications for critical incidents, inspection findings, and report-status changes.
+- Administration screens for users and construction sites.
 
 ## Technology stack
 
-| Layer | Technology |
+| Layer | Technologies |
 | --- | --- |
 | Frontend | React, Vite, React Router, Axios, Tailwind CSS, Recharts |
-| Backend | Node.js, Express, JWT, bcrypt, Zod, Multer |
-| Database | PostgreSQL with Prisma ORM |
-| Media | Cloudinary (optional image storage) |
-| Deployment | Vercel frontend, Render backend, Neon PostgreSQL |
+| Backend | Node.js, Express.js, REST API, Zod, Multer |
+| Security | JWT, bcrypt, Helmet, rate-limited authentication |
+| Database | PostgreSQL, Prisma ORM |
+| Integrations | Cloudinary image storage and Nodemailer SMTP support |
+| Hosting | Vercel frontend, Render backend, Neon PostgreSQL |
+
+## Architecture
+
+```text
+React/Vercel client
+        │ Axios + JWT
+        ▼
+Express/Render REST API
+        │ Prisma ORM
+        ▼
+PostgreSQL/Neon database
+        │
+Cloudinary (optional evidence images) · SMTP (optional email alerts)
+```
 
 ## Project structure
 
 ```text
-frontend/       React client
-backend/        Express REST API and Prisma schema
-backend/prisma/ Database migration and realistic seed data
-render.yaml     Free Render web-service configuration
+frontend/                 React application
+backend/src/routes/       REST API endpoints
+backend/src/middleware/   Authentication and error middleware
+backend/prisma/           Schema, migration, and seed data
+render.yaml               Free Render deployment configuration
+PRD_RECAP.md              Feature-delivery summary
 ```
 
-## Local installation
+## Local setup
 
-1. Copy `backend/.env.example` to `backend/.env` and add a PostgreSQL/Neon `DATABASE_URL` and `JWT_SECRET`.
-2. Copy `frontend/.env.example` to `frontend/.env`.
-3. Run:
+### Prerequisites
+
+- Node.js 20 or newer
+- A PostgreSQL database (a free Neon database is supported)
+
+### Installation
 
 ```bash
+git clone https://github.com/militprakashsahajwani/construction_safety_platform.git
+cd construction_safety_platform
 npm install
 npm run install:all
+```
+
+Create `backend/.env` from `backend/.env.example` and add `DATABASE_URL` plus a strong `JWT_SECRET`. Create `frontend/.env` from `frontend/.env.example`.
+
+```bash
 cd backend
 npx prisma generate
 npx prisma migrate dev --name init
@@ -48,40 +84,40 @@ cd ..
 npm run dev
 ```
 
-Frontend runs at `http://localhost:5173`; API health check: `http://localhost:5000/api/health`.
+The frontend runs at `http://localhost:5173` and the API health check is available at `http://localhost:5000/api/health`.
 
-## Demo accounts
+## Demo credentials
 
-Run `npm run seed` against the same database used by the application before using these accounts.
+Run `npm run seed` against the target database first.
 
 | Role | Email | Password |
 | --- | --- | --- |
-| Admin | `admin@safetyhub.test` | `Safety@123` |
+| Administrator | `admin@safetyhub.test` | `Safety@123` |
 | Site manager | `manager@safetyhub.test` | `Safety@123` |
 | Safety officer | `officer@safetyhub.test` | `Safety@123` |
 
-> If deployed login fails, the deployed Neon database has not been seeded. In the `backend` directory, set the production `DATABASE_URL` locally and run `npm run seed` once. This creates the demo accounts and realistic initial data.
+## API overview
 
-## API summary
-
-| Area | Endpoints |
+| Resource | Routes |
 | --- | --- |
 | Authentication | `POST /api/auth/register`, `POST /api/auth/login`, `GET /api/auth/me` |
 | Sites | `GET/POST /api/sites`, `PUT/DELETE /api/sites/:id` |
-| Reports | `GET/POST /api/incidents`, `PATCH /api/incidents/:id/status` |
+| Incident reports | `GET/POST /api/incidents`, `PATCH /api/incidents/:id/status` |
 | Inspections | `GET/POST /api/inspections`, `GET/POST /api/inspections/templates` |
-| Dashboard | `GET /api/dashboard` |
+| Compliance | `GET /api/dashboard` |
 | Notifications | `GET /api/notifications`, `PATCH /api/notifications/:id/read` |
 | Administration | `GET/POST /api/admin/users`, `PUT/DELETE /api/admin/users/:id` |
 
 ## Deployment
 
-1. Create a free Neon PostgreSQL database and copy its connection string.
-2. Deploy `backend` as a **Free Render Web Service**. Add `DATABASE_URL`, `JWT_SECRET`, and `NODE_ENV=production`.
-3. Set Vercel root directory to `frontend`; add `VITE_API_URL=https://YOUR-RENDER-URL/api` for Production and Preview.
-4. After Vercel deploys, add `FRONTEND_URL=https://YOUR-VERCEL-URL` to Render.
-5. Seed the Neon database once using the command above, then log in with the demo accounts.
+1. Create a free Neon PostgreSQL database and add its connection string as Render's `DATABASE_URL`.
+2. Deploy the `backend` folder to a free Render Web Service using [`render.yaml`](./render.yaml).
+3. Deploy the `frontend` folder through Vercel, with `VITE_API_URL` set to `https://YOUR-RENDER-SERVICE.onrender.com/api`.
+4. Add the final Vercel URL as `FRONTEND_URL` in Render.
+5. Run `npm run seed` once against the production Neon database to create the demo data and credentials.
 
 ## Notes
 
-Free Render services sleep after inactivity and may take approximately a minute to restart. Cloudinary and SMTP values are optional for local testing; in-app notifications remain available without SMTP.
+- Free Render services may sleep after inactivity and need time to restart.
+- `.env` files are excluded from source control; only `.env.example` files are committed.
+- Cloudinary and SMTP credentials are optional for basic local testing. In-app notifications work without SMTP.
